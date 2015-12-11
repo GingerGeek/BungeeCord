@@ -232,17 +232,19 @@ public final class UserConnection implements ProxiedPlayer
         connect(info, callback, retry, true);
     }
 
-    public void connect(ServerInfo info, final Callback<Boolean> callback, final boolean retry, final boolean seamlessTransition)
+    public void connect(ServerInfo info, final Callback<Boolean> callback, final boolean retry, boolean seamlessTransition)
     {
         Preconditions.checkNotNull( info, "info" );
 
-        ServerConnectEvent event = new ServerConnectEvent( this, info );
+        ServerConnectEvent event = new ServerConnectEvent( this, info, seamlessTransition );
         if ( bungee.getPluginManager().callEvent( event ).isCancelled() )
         {
             return;
         }
 
         final BungeeServerInfo target = (BungeeServerInfo) event.getTarget(); // Update in case the event changed target
+        // From here we care about whether we are sending the packet or not.
+        final boolean sendDimensionSwitchPacket = !event.isSeamlessTransition();
 
         if ( getServer() != null && Objects.equal( getServer().getInfo(), target ) )
         {
@@ -265,8 +267,7 @@ public final class UserConnection implements ProxiedPlayer
                 PipelineUtils.BASE.initChannel( ch );
                 ch.pipeline().addAfter( PipelineUtils.FRAME_DECODER, PipelineUtils.PACKET_DECODER, new MinecraftDecoder( Protocol.HANDSHAKE, false, getPendingConnection().getVersion() ) );
                 ch.pipeline().addAfter( PipelineUtils.FRAME_PREPENDER, PipelineUtils.PACKET_ENCODER, new MinecraftEncoder( Protocol.HANDSHAKE, false, getPendingConnection().getVersion() ) );
-                // Server connector has a sendDimensionSwitchPacket boolean so we need to invert seamlessTransition
-                ch.pipeline().get( HandlerBoss.class ).setHandler( new ServerConnector( bungee, UserConnection.this, target, !seamlessTransition ) );
+                ch.pipeline().get( HandlerBoss.class ).setHandler( new ServerConnector( bungee, UserConnection.this, target, sendDimensionSwitchPacket ) );
             }
         };
         ChannelFutureListener listener = new ChannelFutureListener()

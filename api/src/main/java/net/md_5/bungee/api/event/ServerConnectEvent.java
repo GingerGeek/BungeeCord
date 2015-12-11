@@ -35,9 +35,12 @@ public class ServerConnectEvent extends Event implements Cancellable
      */
     private boolean cancelled;
 
-    public ServerConnectEvent(ProxiedPlayer player, ServerInfo target)
+    private boolean seamlessTransition;
+
+    public ServerConnectEvent(ProxiedPlayer player, ServerInfo target, boolean seamlessTransition)
     {
         this.player = player;
         this.target = target;
+        this.seamlessTransition = seamlessTransition;
     }
 }
