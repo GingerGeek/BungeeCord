@@ -199,9 +199,20 @@ public final class UserConnection implements ProxiedPlayer
     }
 
     @Override
+    public void connect(ServerInfo target, boolean seamlessTransitionSwitch)
+    {
+        connect( target, null, false, seamlessTransitionSwitch );
+    }
+
+    @Override
     public void connect(ServerInfo target, Callback<Boolean> callback)
     {
         connect( target, callback, false );
+    }
+
+    @Override
+    public void connect(ServerInfo target, boolean seamlessTransition, Callback<Boolean> callback) {
+        connect(target, callback, false, seamlessTransition);
     }
 
     void sendDimensionSwitch()
@@ -217,7 +228,11 @@ public final class UserConnection implements ProxiedPlayer
         connect( target );
     }
 
-    public void connect(ServerInfo info, final Callback<Boolean> callback, final boolean retry)
+    public void connect(ServerInfo info, final Callback<Boolean> callback, final boolean retry){
+        connect(info, callback, retry, true);
+    }
+
+    public void connect(ServerInfo info, final Callback<Boolean> callback, final boolean retry, final boolean seamlessTransition)
     {
         Preconditions.checkNotNull( info, "info" );
 
@@ -250,7 +265,8 @@ public final class UserConnection implements ProxiedPlayer
                 PipelineUtils.BASE.initChannel( ch );
                 ch.pipeline().addAfter( PipelineUtils.FRAME_DECODER, PipelineUtils.PACKET_DECODER, new MinecraftDecoder( Protocol.HANDSHAKE, false, getPendingConnection().getVersion() ) );
                 ch.pipeline().addAfter( PipelineUtils.FRAME_PREPENDER, PipelineUtils.PACKET_ENCODER, new MinecraftEncoder( Protocol.HANDSHAKE, false, getPendingConnection().getVersion() ) );
-                ch.pipeline().get( HandlerBoss.class ).setHandler( new ServerConnector( bungee, UserConnection.this, target ) );
+                // Server connector has a sendDimensionSwitchPacket boolean so we need to invert seamlessTransition
+                ch.pipeline().get( HandlerBoss.class ).setHandler( new ServerConnector( bungee, UserConnection.this, target, !seamlessTransition ) );
             }
         };
         ChannelFutureListener listener = new ChannelFutureListener()

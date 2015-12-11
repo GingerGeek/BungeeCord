@@ -52,6 +52,7 @@ public class ServerConnector extends PacketHandler
     private State thisState = State.LOGIN_SUCCESS;
     @Getter
     private ForgeServerHandler handshakeHandler;
+    private final boolean sendDimensionSwitch;
 
     private enum State
     {
@@ -220,7 +221,7 @@ public class ServerConnector extends PacketHandler
             }
             serverScoreboard.clear();
 
-            user.sendDimensionSwitch();
+            if(sendDimensionSwitch) user.sendDimensionSwitch();
 
             user.setServerEntityId( login.getEntityId() );
             user.unsafe().sendPacket( new Respawn( login.getDimension(), login.getDifficulty(), login.getGameMode(), login.getLevelType() ) );

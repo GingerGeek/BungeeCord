@@ -70,6 +70,35 @@ public interface ProxiedPlayer extends Connection, CommandSender
     void connect(ServerInfo target, Callback<Boolean> callback);
 
     /**
+     * Connects / transfers this user to the specified connection, gracefully
+     * closing the current one. Depending on the implementation, this method
+     * might return before the user has been connected.
+     *
+     * @param target the new server to connect to
+     * @param callback the method called when the connection is complete, or
+     * when an exception is encountered. The boolean parameter denotes success
+     * or failure.
+     * @param seamlessTransition when set to true, the client will not see the
+     * brown "switching / downloading terrain" screen. The only use case for
+     * this is when you want to silently switch users between servers for
+     * differing parts of the map without loading screens
+     */
+    void connect(ServerInfo target, boolean seamlessTransition, Callback<Boolean> callback);
+
+    /**
+     * Connects / transfers this user to the specified connection, gracefully
+     * closing the current one. Depending on the implementation, this method
+     * might return before the user has been connected.
+     *
+     * @param target the new server to connect to
+     * @param seamlessTransition when set to true, the client will not see the
+     * brown "switching / downloading terrain" screen. The only use case for
+     * this is when you want to silently switch users between servers for
+     * differing parts of the map without loading screens
+     */
+    void connect(ServerInfo target, boolean seamlessTransition);
+
+    /**
      * Gets the server this player is connected to.
      *
      * @return the server this player is connected to
